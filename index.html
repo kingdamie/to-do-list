@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/all.css">
+    <title>My To-Do list</title>
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        body{
+            height: 100%;
+            width: 100%;
+            background-color: lavender;
+        }
+        .wrapper{
+            margin: 120px auto;
+            max-width: 400px;
+            background-color: teal;
+            border-radius: 5px;
+            padding: 25px;
+        }
+        .wrapper header{
+            font-size: 30px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px ;
+        }
+        .wrapper .inputfield{
+            display: flex;
+            height: 45px;
+            width: 100%;
+        }
+        .inputfield input{
+            width: 85%;
+            height: 100%;
+            border: 1px solid #ccc;
+            font-size: 17px;
+            border-radius: 3px;
+            padding-left: 15px;
+            outline: none;
+        }
+        .inputfield button{
+            width: 60px;
+            height: 100%;
+            border: none;
+            outline: none;
+            background-color:red;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 5px;
+            opacity: 0.6;
+            pointer-events: none ;
+        }
+        .inputfield button.active{
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .wrapper .todolist{
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .todolist li{
+            cursor: default;
+            list-style: none;
+            height: 45px;
+            line-height: 45px;
+            position: relative ;
+            background-color: lavender;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            padding: 0 15px;
+            overflow: hidden;
+        }
+        .todolist li span{
+            position: absolute;
+            right: -45px;
+            background-color: red;
+            color: white;
+            width: 45px;
+            text-align: center;
+            border-radius: 0 3px 3px 0;
+            cursor: pointer;
+            transition: all 0.3s ease in;
+        }
+        .todolist li:hover span{
+            right: 0;
+        }
+        .wrapper .footer{
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+            justify-content: space-between;
+        }
+        .footer button{
+            border: none;
+            outline: none;
+            background-color: green;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 6px 10px;
+            opacity: 0.6;
+            pointer-events: none ;
+        }
+        .footer button.active{
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+
+
+</head>
+<body>
+    <div class="wrapper">
+        <header>My Todo App</header>
+        <div class="inputfield">
+            <input type="text" placeholder="Add yout new todo">
+            <button><i class="i fas fa-plus"></i></button>
+        </div>
+        <ul class="todolist">
+           <!-- data is in the local storage -->
+        </ul>
+        <div class="footer">
+            <span>you have <span class="pendingnum"></span> pending tasks</span>
+            <button>Clear All</button>
+        </div>
+    </div>
+
+    <script>
+        const inputbox = document.querySelector(".inputfield input")
+        const addbtn = document.querySelector(".inputfield button")
+        const todolist = document.querySelector(".todolist")
+        const deleteall = document.querySelector(".footer button")
+        // inputbox.onkeyup = () =>{
+        //     let userdata = inputbox.value //getting user entered values
+        //     if(userdata.trim() != 0){// if user value aren't only spaces
+        //         addbtn.classList.add("active");
+        //     }else{
+        //         addbtn.classList.remove("active");
+        //     }
+        // }
+        inputbox.addEventListener('keydown', () => {
+            let userdata = inputbox.value;
+            if(userdata.trim() != -1){// if user value aren't only spaces
+                addbtn.classList.add("active");
+            }else{
+               addbtn.classList.remove("active");
+            }
+        })
+        showtask();
+
+        //if user click on thr add button
+        addbtn.onclick = () =>{
+            let userdata = inputbox.value;
+            let getlocalstorage = localStorage.getItem("New Todo"); //getting localstorage
+            if(getlocalstorage == null){ // if localstorage is null
+                listArr = []; // creating blank arrray
+            }else{
+                listArr =JSON.parse(getlocalstorage);  // transfroming json string  into  js object
+            }
+            listArr.push(userdata) // pushing or adding user data
+            localStorage.setItem("New Todo", JSON.stringify(listArr)); // transfroming js object into json string 
+            showtask();
+        }
+
+        // function to add task list inside ul
+        function showtask(){
+            let getlocalstorage = localStorage.getItem("New Todo"); //getting localstorage
+            if(getlocalstorage == null){ // if localstorage is null
+                listArr = []; // creating blank arrray
+            }else{
+                listArr =JSON.parse(getlocalstorage);  // transfroming json string  into  js object
+            }
+            const pendingnumb = document.querySelector(".pendingnum")
+            pendingnumb.textContent = listArr.length  //passing the lenght value in pendingnum 
+            if(listArr.length > 0){// if array lengt is greater than 0
+                deleteall.classList.add("active")
+            }else{
+                deleteall.classList.remove("active") // unactive the clearall button
+            }
+            let newLiTag = '';
+            listArr.forEach((element, index) => {
+                newLiTag += ` <li> ${element} <span onClick="deleteTask(${index} 
+                    )" ><i class="fas fa-trash"></i></span></li>`
+            });
+            todolist.innerHTML = newLiTag
+            inputbox.value = ""; //once task is add leave the input empty
+        }
+
+        // delete task function
+        function deleteTask(index){
+            let getlocalstorage = localStorage.getItem("New Todo"); //getting localstorage
+            listArr =JSON.parse(getlocalstorage);
+            listArr.splice(index, 1);// delete or remove thr particular index li 
+            // after remove the li again update the local storage
+            localStorage.setItem("New Todo", JSON.stringify(listArr)); // transfroming js object into json string 
+            showtask();
+        }
+
+        // delete  al task function
+        deleteall.onclick = () =>{
+            listArr = [] // empty an array
+            // after delete all task again update the local storage
+            localStorage.setItem("New Todo", JSON.stringify(listArr)); // transfroming js object into json string 
+            showtask();
+        }
+    </script>
+</body>
+</html>
